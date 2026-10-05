@@ -4,8 +4,8 @@ const answerArea = document.getElementById("answerArea");
 const historyList = document.getElementById("historyList");
 const nextButton = document.getElementById("nextButton");
 const submitButton = document.getElementById("submitButton");
+const maxNumInput = document.getElementById("maxNumInput");
 // コンフィグ
-const maxNum = 3;
 const letters = "abcdefghijklmnopqrstuvwxyz";
 // 現在のお題
 let currentQuestion = null;
@@ -13,6 +13,11 @@ let currentQuestion = null;
  * お題を生成.
  */
 function generateQuestion() {
+    const maxNum = Number(maxNumInput.value);
+    if (maxNum < 1) {
+        alert("数字の最大値は1以上にしてください。");
+        return;
+    }
     const num1 = Math.floor(Math.random() * maxNum) + 1;
     const num2 = Math.floor(Math.random() * maxNum) + 1;
     const let1 = letters[Math.floor(Math.random() * letters.length)];
@@ -59,6 +64,7 @@ function addAnswerRow(letter) {
     const input = document.createElement("input");
     input.type = "text";
     input.className = "answer-input";
+    input.dataset.letter = letter;
     row.appendChild(label);
     row.appendChild(input);
     answerArea.appendChild(row);
@@ -71,17 +77,22 @@ submitButton.addEventListener("click", () => {
         return;
     const inputs = answerArea.querySelectorAll(".answer-input");
     const answers = [];
-    // 入力されたものだけ取得
-    inputs.forEach((input) => {
+    let errMsg = "";
+    for (const input of inputs) {
         const value = input.value.trim();
-        if (value !== "")
+        const letter = input.dataset.letter;
+        if (value === "" || !letter || !value.toLowerCase().startsWith(letter)) {
+            errMsg += `「${letter}」で始まる回答を入力してください。\n`;
+        }
+        else {
             answers.push(value);
-    });
-    if (answers.length === 0) {
-        alert("回答を1つ以上入力してください。");
+        }
+    }
+    if (errMsg) {
+        alert(errMsg);
         return;
     }
-    // 「まだ回答がありません」を削除
+    // 初期表示を削除
     const empty = historyList.querySelector(".empty");
     if (empty)
         empty.remove();
